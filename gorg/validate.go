@@ -1,0 +1,3 @@
+package gorg
+
+func validateModuleConfig() {}
