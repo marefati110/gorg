@@ -108,7 +108,12 @@ func urlResolve(r Route, m Module, c Config) string {
 		version = r.Version
 	}
 
-	url := c.Prefix + m.Prefix + version + fmt.Sprintf("/%s", m.Name) + r.Path
+	prefix := m.Prefix
+	if r.Prefix != "" {
+		prefix = r.Prefix
+	}
+
+	url := c.Prefix + prefix + version + fmt.Sprintf("/%s", m.Name) + r.Path
 
 	return url
 }
