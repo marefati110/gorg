@@ -43,7 +43,7 @@ type Route struct {
 	Path    string
 	Method  HttpMethod
 	Methods []HttpMethod
-	Handler func(e echo.Context) error
+	Handler func(c echo.Context) error
 	Body    any
 	Query   any
 	Res     any
@@ -97,9 +97,10 @@ func RegisterModule(modules ...Module) []Module {
 
 	return uniqueModules
 }
-func urlResolve(r Route, m Module, cfg Config) string {
 
-	version := cfg.Version
+func urlResolve(r Route, m Module, c Config) string {
+
+	version := c.Version
 	if m.Version != "" {
 		version = m.Version
 	}
@@ -107,15 +108,15 @@ func urlResolve(r Route, m Module, cfg Config) string {
 		version = r.Version
 	}
 
-	url := cfg.Prefix + m.Prefix + version + fmt.Sprintf("/%s", m.Name) + r.Path
+	url := c.Prefix + m.Prefix + version + fmt.Sprintf("/%s", m.Name) + r.Path
 
 	return url
 }
 
-func printInitLog(cfg *Config) error {
+func printInitLog(c *Config) error {
 
 	// clear terminal
-	if cfg.DisabledClearTerminal {
+	if c.DisabledClearTerminal {
 		if runtime.GOOS == "linux" {
 			cmd := exec.Command("clear")
 			cmd.Stdout = os.Stdout
@@ -141,10 +142,10 @@ func printInitLog(cfg *Config) error {
 	// print information
 	fmt.Println(aurora.Bold(" Project information" + strings.Repeat(" ", 31)).BgGray(18))
 
-	if !cfg.ReleaseMode {
+	if !c.ReleaseMode {
 		routeCounter := 0
 
-		for _, module := range cfg.ModuleConfigs {
+		for _, module := range c.ModuleConfigs {
 			for _, route := range module.Routes {
 
 				methods := route.Methods
@@ -156,7 +157,7 @@ func printInitLog(cfg *Config) error {
 
 				for _, method := range methods {
 
-					url := urlResolve(route, module, *cfg)
+					url := urlResolve(route, module, *c)
 					methodS := fmt.Sprintf("%s%s", method, strings.Repeat(" ", 9-len(method)))
 					moduleS := fmt.Sprintf("%s%s", aurora.Bold(" "+module.Name+" ").BgGray(8), strings.Repeat(" ", 4))
 
@@ -188,21 +189,21 @@ func printInitLog(cfg *Config) error {
 	return nil
 }
 
-func middlewareFactor(cfg *Config) error {
+func middlewareFactor(c *Config) error {
 
-	e := cfg.Engine
+	e := c.Engine
 
 	e.Logger = middleware.GetEchoLogger()
-	e.Use(middleware.Hook())
+	e.Use(middleware.Hook(c.ReleaseMode))
 
 	return nil
 }
 
-func routeFactory(cfg *Config) error {
+func routeFactory(c *Config) error {
 
-	e := cfg.Engine
+	e := c.Engine
 
-	for _, module := range cfg.ModuleConfigs {
+	for _, module := range c.ModuleConfigs {
 		for _, route := range module.Routes {
 
 			methods := route.Methods
@@ -214,7 +215,7 @@ func routeFactory(cfg *Config) error {
 
 			for _, method := range methods {
 
-				url := urlResolve(route, module, *cfg)
+				url := urlResolve(route, module, *c)
 				e.Add(string(method), url, route.Handler)
 			}
 		}
@@ -223,9 +224,9 @@ func routeFactory(cfg *Config) error {
 	return nil
 }
 
-func engineConfig(cfg *Config) error {
+func engineConfig(c *Config) error {
 
-	e := cfg.Engine
+	e := c.Engine
 
 	e.HideBanner = true
 	// e.HidePort = true
@@ -234,23 +235,23 @@ func engineConfig(cfg *Config) error {
 
 }
 
-func GorgFactory(cfg *Config) error {
+func GorgFactory(c *Config) error {
 
-	validate(cfg)
+	validate(c)
 
-	if err := middlewareFactor(cfg); err != nil {
+	if err := middlewareFactor(c); err != nil {
 		return err
 	}
 
-	if err := routeFactory(cfg); err != nil {
+	if err := routeFactory(c); err != nil {
 		return err
 	}
 
-	if err := engineConfig(cfg); err != nil {
+	if err := engineConfig(c); err != nil {
 		return err
 	}
 
-	if err := printInitLog(cfg); err != nil {
+	if err := printInitLog(c); err != nil {
 		return err
 	}
 

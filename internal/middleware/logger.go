@@ -1,12 +1,15 @@
 package middleware
 
 import (
+	"fmt"
 	"io"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
+	"github.com/logrusorgru/aurora/v4"
 	"github.com/sirupsen/logrus"
 )
 
@@ -149,45 +152,77 @@ func (l Logrus) Panic(i ...interface{}) {
 	Logger.Panic(i[0].(string))
 }
 
-func logrusMiddlewareHandler(c echo.Context, next echo.HandlerFunc) error {
+func logrusMiddlewareHandler(c echo.Context, next echo.HandlerFunc, releaseMode bool) error {
 	req := c.Request()
 	res := c.Response()
 	start := time.Now()
+
 	if err := next(c); err != nil {
 		c.Error(err)
 	}
+
 	stop := time.Now()
 
 	p := req.URL.Path
 
-	bytesIn := req.Header.Get(echo.HeaderContentLength)
+	if releaseMode {
 
-	Logger.WithFields(map[string]interface{}{
-		"time_rfc3339":  time.Now().Format(time.RFC3339),
-		"remote_ip":     c.RealIP(),
-		"host":          req.Host,
-		"uri":           req.RequestURI,
-		"method":        req.Method,
-		"path":          p,
-		"referer":       req.Referer(),
-		"user_agent":    req.UserAgent(),
-		"status":        res.Status,
-		"latency":       strconv.FormatInt(stop.Sub(start).Nanoseconds()/1000, 10),
-		"latency_human": stop.Sub(start).String(),
-		"bytes_in":      bytesIn,
-		"bytes_out":     strconv.FormatInt(res.Size, 10),
-	}).Info("Handled request")
+		bytesIn := req.Header.Get(echo.HeaderContentLength)
+
+		Logger.WithFields(map[string]any{
+			"time_rfc3339":  time.Now().Format(time.RFC3339),
+			"remote_ip":     c.RealIP(),
+			"host":          req.Host,
+			"uri":           req.RequestURI,
+			"method":        req.Method,
+			"path":          p,
+			"referer":       req.Referer(),
+			"user_agent":    req.UserAgent(),
+			"status":        res.Status,
+			"latency":       strconv.FormatInt(stop.Sub(start).Nanoseconds()/1000, 10),
+			"latency_human": stop.Sub(start).String(),
+			"bytes_in":      bytesIn,
+			"bytes_out":     strconv.FormatInt(res.Size, 10),
+		}).Info("Handled request")
+
+		return nil
+	}
+
+	methodS := " " + req.Method + strings.Repeat(" ", 8-len(req.Method))
+	switch req.Method {
+	case "GET":
+		methodS = aurora.BgGreen(methodS).Bold().String()
+	case "POST":
+		methodS = aurora.BgBlue(methodS).Bold().String()
+	case "PUT":
+		methodS = aurora.BgYellow(methodS).Bold().String()
+	case "DELETE":
+		methodS = aurora.BgRed(methodS).Bold().String()
+	default:
+		methodS = aurora.BgWhite(methodS).Bold().String()
+	}
+
+	resCodeS := fmt.Sprint(res.Status)
+	if res.Status < 300 {
+		resCodeS = aurora.Green(resCodeS).String()
+	} else if res.Status < 400 {
+		resCodeS = aurora.Yellow(resCodeS).String()
+	} else if res.Status > 400 {
+		resCodeS = aurora.Red(resCodeS).String()
+	}
+
+	log := methodS + "    " + p + "   " + resCodeS + "   " + stop.Sub(start).String()
+	Logger.Info(log)
 
 	return nil
-}
 
-func logger(next echo.HandlerFunc) echo.HandlerFunc {
-	return func(c echo.Context) error {
-		return logrusMiddlewareHandler(c, next)
-	}
 }
 
 // Hook is a function to process middleware.
-func Hook() echo.MiddlewareFunc {
-	return logger
+func Hook(releaseMode bool) echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			return logrusMiddlewareHandler(c, next, releaseMode)
+		}
+	}
 }
