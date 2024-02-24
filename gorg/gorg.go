@@ -52,9 +52,8 @@ type ModuleConfig struct {
 	Prefix       string
 	Version      string
 	AuthRequired bool
-
-	Name   string
-	Routes []Route
+	Name         string
+	Routes       []Route
 }
 
 type Config struct {
@@ -201,10 +200,7 @@ func engineConfig(cfg *Config) error {
 
 func GorgFactory(cfg *Config) error {
 
-	e := cfg.Engine
-	if e == nil {
-		return fmt.Errorf("engine required")
-	}
+	validate(cfg)
 
 	if err := middlewareFactor(cfg); err != nil {
 		return err
