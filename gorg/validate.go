@@ -32,8 +32,8 @@ func validateRouteConfig(c *Config) {
 				panic(fmt.Sprintf("module:%s; path:%s  route handler is required", m.Name, r.Path))
 			}
 
-			if r.Methods == nil || len(r.Methods) == 0 {
-				panic(fmt.Sprintf("module:%s   route method is required", m.Name))
+			if (r.Methods == nil || len(r.Methods) == 0) && r.Method == "" {
+				panic(fmt.Sprintf("module:%s; path:%s  route method is required", m.Name, r.Path))
 			}
 
 		}

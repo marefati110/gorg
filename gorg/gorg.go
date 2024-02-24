@@ -41,6 +41,7 @@ type Route struct {
 	AuthRequired bool
 
 	Path    string
+	Method  HttpMethod
 	Methods []HttpMethod
 	Handler func(e echo.Context) error
 	Body    any
@@ -48,7 +49,7 @@ type Route struct {
 	Res     any
 }
 
-type ModuleConfig struct {
+type Module struct {
 	Prefix       string
 	Version      string
 	AuthRequired bool
@@ -58,7 +59,7 @@ type ModuleConfig struct {
 
 type Config struct {
 	Engine                    *echo.Echo
-	ModuleConfigs             []ModuleConfig
+	ModuleConfigs             []Module
 	Prefix                    string
 	Version                   string
 	DisableDefaultMiddlewares bool
@@ -72,12 +73,31 @@ type Config struct {
 
 //
 
-func RegisterModule(...ModuleConfig) (c []ModuleConfig) {
+func RegisterModule(modules ...Module) []Module {
+	// Create a map to store modules by their names
+	moduleMap := make(map[string]Module)
 
-	return c
+	// Iterate over the modules passed to the function
+	for _, module := range modules {
+		// Check if a module with the same name already exists
+		_, exists := moduleMap[module.Name]
+		if !exists {
+			// If the module doesn't exist, add it to the map
+			moduleMap[module.Name] = module
+		}
+	}
+
+	// Create a slice to hold unique modules
+	uniqueModules := make([]Module, 0, len(moduleMap))
+
+	// Extract unique modules from the map
+	for _, module := range moduleMap {
+		uniqueModules = append(uniqueModules, module)
+	}
+
+	return uniqueModules
 }
-
-func urlResolve(r Route, m ModuleConfig, cfg Config) string {
+func urlResolve(r Route, m Module, cfg Config) string {
 
 	version := cfg.Version
 	if m.Version != "" {
@@ -126,7 +146,15 @@ func printInitLog(cfg *Config) error {
 
 		for _, module := range cfg.ModuleConfigs {
 			for _, route := range module.Routes {
-				for _, method := range route.Methods {
+
+				methods := route.Methods
+
+				if route.Method != "" {
+					methods = append(methods, route.Method)
+
+				}
+
+				for _, method := range methods {
 
 					url := urlResolve(route, module, *cfg)
 					methodS := fmt.Sprintf("%s%s", method, strings.Repeat(" ", 9-len(method)))
@@ -176,7 +204,15 @@ func routeFactory(cfg *Config) error {
 
 	for _, module := range cfg.ModuleConfigs {
 		for _, route := range module.Routes {
-			for _, method := range route.Methods {
+
+			methods := route.Methods
+
+			if route.Method != "" {
+				methods = append(methods, route.Method)
+
+			}
+
+			for _, method := range methods {
 
 				url := urlResolve(route, module, *cfg)
 				e.Add(string(method), url, route.Handler)
