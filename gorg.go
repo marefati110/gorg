@@ -8,75 +8,12 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/labstack/echo/v4"
+	"github.com/go-openapi/spec"
 	"github.com/logrusorgru/aurora/v4"
 	"github.com/marefati110/gorg/internal/middleware"
 	"github.com/marefati110/gorg/internal/utils"
+	"github.com/marefati110/gorg/pkg/swagger"
 )
-
-type HttpMethod string
-type GorgMiddleware string
-
-const (
-	GET     HttpMethod = "GET"
-	PUT     HttpMethod = "PUT"
-	HEAD    HttpMethod = "HEAD"
-	POST    HttpMethod = "POST"
-	PATCH   HttpMethod = "PATCH"
-	TRACE   HttpMethod = "TRACE"
-	DELETE  HttpMethod = "DELETE"
-	OPTIONS HttpMethod = "OPTIONS"
-	CONNECT HttpMethod = "CONNECT"
-)
-
-const (
-	Auth    GorgMiddleware = "auth"
-	Logger  GorgMiddleware = "logger"
-	Recover GorgMiddleware = "recover"
-)
-
-type RouteDoc struct {
-	Description string
-	Summary     string
-}
-
-type Route struct {
-	Prefix       string
-	Version      string
-	AuthRequired bool
-
-	Doc RouteDoc
-
-	Path    string
-	Method  HttpMethod
-	Methods []HttpMethod
-	Handler func(c echo.Context) error
-	Body    any
-	Query   any
-	Res     any
-}
-
-type Module struct {
-	Prefix       string
-	Version      string
-	AuthRequired bool
-	Name         string
-	Routes       []Route
-}
-
-type Config struct {
-	Engine                    *echo.Echo
-	ModuleConfigs             []Module
-	Prefix                    string
-	Version                   string
-	DisableDefaultMiddlewares bool
-	DisabledClearTerminal     bool
-	ReleaseMode               bool
-
-	HideBanner             bool
-	HideProjectInformation bool
-	HidePort               bool
-}
 
 //
 
@@ -246,6 +183,19 @@ func engineConfig(c *Config) error {
 	// e.HidePort = true
 
 	return nil
+}
+
+func swaggerFactor(c *Config) error {
+
+	s := swagger.SwaggerConfig{}
+	s.Init()
+	s.SetVersion()
+	s.SetInfo(spec.InfoProps{
+		Title:       c.Swagger.Title,
+		Description: c.Swagger.Description,
+	})
+
+	return nil
 
 }
 
@@ -262,6 +212,10 @@ func GorgFactory(c *Config) error {
 	}
 
 	if err := engineConfig(c); err != nil {
+		return err
+	}
+
+	if err := swaggerFactor(c); err != nil {
 		return err
 	}
 

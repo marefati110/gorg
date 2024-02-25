@@ -201,7 +201,6 @@ func logrusMiddlewareHandler(c echo.Context, next echo.HandlerFunc, releaseMode 
 	default:
 		methodS = aurora.BgWhite(methodS).Bold().String()
 	}
-
 	resCodeS := fmt.Sprint(res.Status)
 	if res.Status < 300 {
 		resCodeS = aurora.Green(resCodeS).String()
