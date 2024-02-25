@@ -35,10 +35,17 @@ const (
 	Recover GorgMiddleware = "recover"
 )
 
+type RouteDoc struct {
+	Description string
+	Summary     string
+}
+
 type Route struct {
 	Prefix       string
 	Version      string
 	AuthRequired bool
+
+	Doc RouteDoc
 
 	Path    string
 	Method  HttpMethod
@@ -74,23 +81,16 @@ type Config struct {
 //
 
 func RegisterModule(modules ...Module) []Module {
-	// Create a map to store modules by their names
 	moduleMap := make(map[string]Module)
 
-	// Iterate over the modules passed to the function
 	for _, module := range modules {
-		// Check if a module with the same name already exists
 		_, exists := moduleMap[module.Name]
 		if !exists {
-			// If the module doesn't exist, add it to the map
 			moduleMap[module.Name] = module
 		}
 	}
 
-	// Create a slice to hold unique modules
 	uniqueModules := make([]Module, 0, len(moduleMap))
-
-	// Extract unique modules from the map
 	for _, module := range moduleMap {
 		uniqueModules = append(uniqueModules, module)
 	}
@@ -98,7 +98,7 @@ func RegisterModule(modules ...Module) []Module {
 	return uniqueModules
 }
 
-func urlResolve(r Route, m Module, c Config) string {
+func UrlResolve(r Route, m Module, c Config) string {
 
 	version := c.Version
 	if m.Version != "" {
@@ -116,6 +116,15 @@ func urlResolve(r Route, m Module, c Config) string {
 	url := c.Prefix + prefix + version + fmt.Sprintf("/%s", m.Name) + r.Path
 
 	return url
+}
+
+func MethodResolve(r Route) []HttpMethod {
+
+	if r.Method != "" {
+		r.Methods = append(r.Methods, r.Method)
+	}
+
+	return r.Methods
 }
 
 func printInitLog(c *Config) error {
@@ -162,7 +171,7 @@ func printInitLog(c *Config) error {
 
 				for _, method := range methods {
 
-					url := urlResolve(route, module, *c)
+					url := UrlResolve(route, module, *c)
 					methodS := fmt.Sprintf("%s%s", method, strings.Repeat(" ", 9-len(method)))
 					moduleS := fmt.Sprintf("%s%s", aurora.Bold(" "+module.Name+" ").BgGray(8), strings.Repeat(" ", 4))
 
@@ -220,7 +229,7 @@ func routeFactory(c *Config) error {
 
 			for _, method := range methods {
 
-				url := urlResolve(route, module, *c)
+				url := UrlResolve(route, module, *c)
 				e.Add(string(method), url, route.Handler)
 			}
 		}
