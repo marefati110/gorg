@@ -11,8 +11,8 @@ import (
 	"github.com/go-openapi/spec"
 	"github.com/logrusorgru/aurora/v4"
 	"github.com/marefati110/gorg/internal/middleware"
+	"github.com/marefati110/gorg/internal/swagger"
 	"github.com/marefati110/gorg/internal/utils"
-	"github.com/marefati110/gorg/pkg/swagger"
 )
 
 //

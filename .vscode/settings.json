@@ -1,3 +1,10 @@
 {
-  "cSpell.words": ["gorg", "labstack", "Logrus", "logrusorgru"]
+  "cSpell.words": [
+    "gommon",
+    "gorg",
+    "labstack",
+    "Logrus",
+    "logrusorgru",
+    "sirupsen"
+  ]
 }

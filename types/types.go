@@ -35,13 +35,14 @@ type Route struct {
 
 	Doc RouteDoc
 
-	Path    string
-	Method  HttpMethod
-	Methods []HttpMethod
-	Handler func(c echo.Context) error
-	Body    any
-	Query   any
-	Res     any
+	Path        string
+	Method      HttpMethod
+	Methods     []HttpMethod
+	Handler     func(c echo.Context) error
+	EchoHandler func(c echo.Context) error
+	Body        any
+	Query       any
+	Res         any
 }
 
 type Module struct {
@@ -76,4 +77,8 @@ type Config struct {
 	HideBanner             bool
 	HideProjectInformation bool
 	HidePort               bool
+}
+
+type Controller struct {
+	Path string
 }
