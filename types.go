@@ -77,3 +77,8 @@ type Config struct {
 	HideProjectInformation bool
 	HidePort               bool
 }
+
+type Context struct {
+	C echo.Context
+	B struct{}
+}

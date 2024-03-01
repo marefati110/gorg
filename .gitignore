@@ -31,3 +31,5 @@ user
 .temp
 main.go
 main
+test
+test.sqlite

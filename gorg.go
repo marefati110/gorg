@@ -15,8 +15,6 @@ import (
 	"github.com/marefati110/gorg/internal/utils"
 )
 
-//
-
 func RegisterModule(modules ...Module) []Module {
 	moduleMap := make(map[string]Module)
 
