@@ -2,7 +2,6 @@ package gorg
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"runtime"
@@ -14,6 +13,21 @@ import (
 	"github.com/marefati110/gorg/internal/swagger"
 	"github.com/marefati110/gorg/internal/utils"
 )
+
+func printLogo() {
+
+	fmt.Println(`
+###################################################
+#     _______   ______   .______       _______    #
+#    /  _____| /  __  \  |   _  \     /  _____|   #
+#   |  |  __  |  |  |  | |  |_)  |   |  |  __     #
+#   |  | |_ | |  |  |  | |      /    |  | |_ |    #
+#   |  |__| | |  |--|  | |  |\  \----|  |__| |    #
+#    \______|  \______/  | _| \._____|\______|    #
+#                                                 #
+###################################################`)
+
+}
 
 func RegisterModule(modules ...Module) []Module {
 	moduleMap := make(map[string]Module)
@@ -82,11 +96,7 @@ func printInitLog(c *Config) error {
 	whiteSpace := strings.Repeat(" ", 78-(len(wellComeMessage)+len(engineInfo)))
 	fmt.Println(wellComeMessage, whiteSpace, engineInfo)
 
-	content, err := os.ReadFile("./logo.txt")
-	if err != nil {
-		log.Panic("cannot open logo file")
-	}
-	fmt.Println(string(content))
+	printLogo()
 
 	// print information
 	fmt.Println(aurora.Bold(" Project information" + strings.Repeat(" ", 31)).BgGray(18))
