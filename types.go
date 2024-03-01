@@ -44,12 +44,13 @@ type Route struct {
 	Res     any
 }
 
-type Module struct {
+type Group struct {
 	Prefix       string
 	Version      string
 	AuthRequired bool
 	Name         string
 	Routes       []Route
+	Middlewares  []echo.MiddlewareFunc
 }
 
 type Swagger struct {
@@ -65,20 +66,17 @@ type Swagger struct {
 type Config struct {
 	Swagger
 
-	Engine                    *echo.Echo
-	ModuleConfigs             []Module
-	Prefix                    string
-	Version                   string
-	DisableDefaultMiddlewares bool
-	DisabledClearTerminal     bool
-	ReleaseMode               bool
+	Engine *echo.Echo
+	Groups []Group
 
-	HideBanner             bool
-	HideProjectInformation bool
-	HidePort               bool
-}
+	Prefix  string
+	Version string
 
-type Context struct {
-	C echo.Context
-	B struct{}
+	// DisableDefaultMiddlewares bool
+	DisabledClearTerminal bool
+	ReleaseMode           bool
+
+	HideBanner      bool
+	HidePort        bool
+	HideInformation bool
 }

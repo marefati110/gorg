@@ -14,7 +14,7 @@ func validate(c *Config) {
 }
 
 func validateModuleConfig(c *Config) {
-	for _, item := range c.ModuleConfigs {
+	for _, item := range c.Groups {
 		if item.Name == "" {
 			panic("Module name required")
 		}
@@ -22,7 +22,7 @@ func validateModuleConfig(c *Config) {
 }
 
 func validateRouteConfig(c *Config) {
-	for _, m := range c.ModuleConfigs {
+	for _, m := range c.Groups {
 		for _, r := range m.Routes {
 			if r.Path == "" {
 				panic(fmt.Sprintf("module:%s   route path is required", m.Name))

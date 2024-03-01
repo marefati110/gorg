@@ -15,7 +15,6 @@ import (
 )
 
 func printLogo() {
-
 	fmt.Println(`
 ###################################################
 #     _______   ______   .______       _______    #
@@ -26,11 +25,10 @@ func printLogo() {
 #    \______|  \______/  | _| \._____|\______|    #
 #                                                 #
 ###################################################`)
-
 }
 
-func RegisterModule(modules ...Module) []Module {
-	moduleMap := make(map[string]Module)
+func RegisterGroup(modules ...Group) []Group {
+	moduleMap := make(map[string]Group)
 
 	for _, module := range modules {
 		_, exists := moduleMap[module.Name]
@@ -39,7 +37,7 @@ func RegisterModule(modules ...Module) []Module {
 		}
 	}
 
-	uniqueModules := make([]Module, 0, len(moduleMap))
+	uniqueModules := make([]Group, 0, len(moduleMap))
 	for _, module := range moduleMap {
 		uniqueModules = append(uniqueModules, module)
 	}
@@ -47,7 +45,7 @@ func RegisterModule(modules ...Module) []Module {
 	return uniqueModules
 }
 
-func UrlResolve(r Route, m Module, c Config) string {
+func UrlResolve(r Route, m Group, c Config) string {
 
 	version := c.Version
 	if m.Version != "" {
@@ -104,7 +102,7 @@ func printInitLog(c *Config) error {
 	if !c.ReleaseMode {
 		routeCounter := 0
 
-		for _, module := range c.ModuleConfigs {
+		for _, module := range c.Groups {
 			for _, route := range module.Routes {
 
 				methods := route.Methods
@@ -164,7 +162,7 @@ func routeFactory(c *Config) error {
 
 	e := c.Engine
 
-	for _, module := range c.ModuleConfigs {
+	for _, module := range c.Groups {
 		for _, route := range module.Routes {
 
 			methods := route.Methods
