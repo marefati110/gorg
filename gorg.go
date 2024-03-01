@@ -162,20 +162,27 @@ func routeFactory(c *Config) error {
 
 	e := c.Engine
 
-	for _, module := range c.Groups {
-		for _, route := range module.Routes {
+	for _, group := range c.Groups {
 
-			methods := route.Methods
+		for _, r := range group.Routes {
 
-			if route.Method != "" {
-				methods = append(methods, route.Method)
+			methods := r.Methods
 
+			if r.Method != "" {
+				methods = append(methods, r.Method)
 			}
 
-			for _, method := range methods {
+			for _, m := range methods {
 
-				url := UrlResolve(route, module, *c)
-				e.Add(string(method), url, route.Handler)
+				url := UrlResolve(r, group, *c)
+
+				if group.Name == "" {
+					g := e.Group(group.Name)
+					g.Add(string(m), url, r.Handler, group.Middlewares...)
+				} else {
+					e.Add(string(m), url, r.Handler, group.Middlewares...)
+				}
+
 			}
 		}
 	}
