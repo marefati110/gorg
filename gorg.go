@@ -147,6 +147,8 @@ func middlewareFactor(c *Config) error {
 	e.Logger = middleware.GetEchoLogger()
 	e.Use(middleware.Hook(c.ReleaseMode))
 
+	e.Use(middleware.Validator())
+
 	return nil
 }
 
@@ -196,7 +198,6 @@ func swaggerFactor(c *Config) error {
 	})
 
 	return nil
-
 }
 
 func GorgFactory(c *Config) error {

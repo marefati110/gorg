@@ -5,6 +5,7 @@
     "labstack",
     "Logrus",
     "logrusorgru",
+    "openapi",
     "sirupsen"
   ]
 }
