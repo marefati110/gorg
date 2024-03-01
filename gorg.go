@@ -8,6 +8,8 @@ import (
 	"strings"
 
 	"github.com/go-openapi/spec"
+	echojwt "github.com/labstack/echo-jwt/v4"
+	echoMiddleware "github.com/labstack/echo/v4/middleware"
 	"github.com/logrusorgru/aurora/v4"
 	"github.com/marefati110/gorg/internal/middleware"
 	"github.com/marefati110/gorg/internal/swagger"
@@ -152,6 +154,12 @@ func middlewareFactor(c *Config) error {
 
 	e.Logger = middleware.GetEchoLogger()
 	e.Use(middleware.Hook(c.ReleaseMode))
+
+	e.Use(echoMiddleware.Recover())
+
+	e.Use(echojwt.WithConfig(echojwt.Config{
+		SigningKey: []byte("secret"),
+	}))
 
 	e.Use(middleware.Validator())
 
